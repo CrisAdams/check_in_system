@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="apple-touch-icon" href="/icon-checkin.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Check-In">
+    <title>Check-In</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background: #e8e6e1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header-title {
+            font-size: 0.75em;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #888;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .header-time {
+            font-size: 0.95em;
+            color: #999;
+            font-weight: 300;
+        }
+
+        .card {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            padding: 60px 50px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 3.5em;
+            color: #1a1a1a;
+            margin-bottom: 15px;
+            font-weight: 600;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+        }
+
+        h1 .italic {
+            font-style: italic;
+            font-weight: 300;
+            color: #6b9080;
+        }
+
+        .subtitle {
+            color: #999;
+            margin-bottom: 40px;
+            font-size: 1em;
+            font-weight: 300;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        label {
+            display: block;
+            color: #ccc;
+            font-size: 0.65em;
+            margin-bottom: 12px;
+            font-weight: 500;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+        }
+
+        .select-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        select {
+            width: 100%;
+            padding: 20px 50px 20px 20px;
+            font-size: 1em;
+            border: 1px solid #e5e5e5;
+            border-radius: 12px;
+            background-color: #f8f8f8;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            appearance: none;
+            color: #999;
+            font-weight: 300;
+        }
+
+        select option {
+            color: #1a1a1a;
+        }
+
+        .select-wrapper::after {
+            content: '›';
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%) rotate(90deg);
+            font-size: 1.5em;
+            color: #ccc;
+            pointer-events: none;
+        }
+
+        select:hover {
+            background-color: #f5f5f5;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #d5d5d5;
+        }
+
+        .btn-checkin {
+            width: 100%;
+            padding: 22px 40px;
+            font-size: 1.05em;
+            font-weight: 400;
+            color: #aaa;
+            background: #e8e6e1;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            letter-spacing: 0.02em;
+        }
+
+        .btn-checkin::after {
+            content: '→';
+            font-size: 1.2em;
+        }
+
+        .btn-checkin:hover {
+            background: #dcd9d4;
+        }
+
+        .btn-checkin:active {
+            transform: scale(0.99);
+        }
+
+        .btn-checkin:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .footer {
+            margin-top: 40px;
+            font-size: 0.85em;
+            color: #bbb;
+            font-weight: 300;
+            text-align: center;
+        }
+
+        .message {
+            margin-top: 25px;
+            padding: 16px 24px;
+            border-radius: 10px;
+            font-size: 0.95em;
+            font-weight: 300;
+            display: none;
+            width: 100%;
+        }
+
+        .message.success {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Tablet optimization */
+        @media (max-width: 768px) {
+            .card {
+                padding: 40px 30px;
+            }
+            h1 {
+                font-size: 2.5em;
+            }
+            .subtitle {
+                font-size: 0.95em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-title">CHECK-IN</div>
+        <div class="header-time" id="currentTime">10:24 AM</div>
+    </div>
+
+    <div class="card">
+        <h1>Who are you <span class="italic">here to see?</span></h1>
+        <p class="subtitle">Select a Professional below and we'll notify them right away.</p>
+
+        <form id="checkinForm">
+            <div class="form-group">
+                <label for="officeSelect">LIST OF PROFESSIONALS</label>
+                <div class="select-wrapper">
+                    <select id="officeSelect" required title="Please select a professional from the list" aria-label="Please select a professional from the list" oninvalid="this.setCustomValidity('Please select a professional from the list')" oninput="this.setCustomValidity('')">
+                        <option value="">— Select a Professional —</option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-checkin" id="checkinBtn">
+                Check In
+            </button>
+        </form>
+
+        <div id="message" class="message"></div>
+    </div>
+
+    <div class="footer" id="currentDate">Monday, March 9, 2026</div>
+
+    <script>
+        // Load professionals from server
+        async function loadProfessionals() {
+            const select = document.getElementById('officeSelect');
+            const res = await fetch('/api/professionals');
+            const professionals = await res.json();
+            const current = select.value;
+            select.innerHTML = '<option value="">— Select a Professional —</option>';
+            professionals.forEach(p => {
+                const option = document.createElement('option');
+                option.value = p.name;
+                option.textContent = p.name;
+                select.appendChild(option);
+            });
+            select.value = current;
+        }
+        loadProfessionals();
+
+        // Reload list whenever the page becomes visible again
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') loadProfessionals();
+        });
+
+        const form = document.getElementById('checkinForm');
+        const officeSelect = document.getElementById('officeSelect');
+        const checkinBtn = document.getElementById('checkinBtn');
+        const messageDiv = document.getElementById('message');
+        const timeDisplay = document.getElementById('currentTime');
+        const dateDisplay = document.getElementById('currentDate');
+
+        // Update time display
+        function updateTime() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            const displayHours = hours % 12 || 12;
+            const displayMinutes = minutes.toString().padStart(2, '0');
+            timeDisplay.textContent = `${displayHours}:${displayMinutes} ${ampm}`;
+        }
+
+        // Update date display
+        function updateDate() {
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            dateDisplay.textContent = now.toLocaleDateString('en-US', options);
+        }
+
+        updateTime();
+        updateDate();
+        setInterval(updateTime, 60000); // Update every minute
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const office = officeSelect.value;
+
+            if (!office) {
+                showMessage('Please select a provider', 'error');
+                return;
+            }
+
+            // Disable button during request
+            checkinBtn.disabled = true;
+            const originalHTML = checkinBtn.innerHTML;
+            checkinBtn.innerHTML = 'Checking in...';
+
+            try {
+                const response = await fetch('/api/checkin', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ office })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessage('You are checked in.', 'success');
+
+                    // Reset form after 2.5 seconds
+                    setTimeout(() => {
+                        officeSelect.value = '';
+                        messageDiv.classList.remove('show');
+                    }, 2500);
+                } else {
+                    showMessage(`Error: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showMessage('Connection error. Please check the server.', 'error');
+                console.error('Check-in error:', error);
+            } finally {
+                // Re-enable button
+                checkinBtn.disabled = false;
+                checkinBtn.innerHTML = originalHTML;
+            }
+        });
+
+        function showMessage(text, type) {
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type} show`;
+        }
+    </script>
+</body>
+</html>

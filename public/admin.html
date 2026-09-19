@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="apple-touch-icon" href="/icon-admin.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Check-In Admin">
+    <title>Check-In Administration</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        .toast {
+            position: fixed;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 0.95em;
+            font-weight: 500;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .toast.show { opacity: 1; }
+        .toast.success { background: #2e7d32; color: white; }
+        .toast.error { background: #c62828; color: white; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #e8e6e1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header-title {
+            font-size: 0.75em;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #888;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            padding: 50px 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h2 {
+            font-size: 1.6em;
+            color: #1a1a1a;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            color: #999;
+            font-size: 0.9em;
+            font-weight: 300;
+            margin-bottom: 30px;
+        }
+
+        /* Login */
+        .password-wrapper {
+            position: relative;
+            margin-bottom: 14px;
+        }
+
+        .password-wrapper input {
+            width: 100%;
+            padding: 16px 48px 16px 20px;
+            font-size: 1em;
+            border: 1px solid #e5e5e5;
+            border-radius: 12px;
+            background: #f8f8f8;
+            outline: none;
+        }
+
+        .eye-btn {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #aaa;
+            font-size: 1.2em;
+            padding: 4px;
+        }
+
+        .eye-btn:hover { color: #6b9080; }
+
+        /* Buttons */
+        .btn {
+            padding: 14px 24px;
+            font-size: 0.9em;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #6b9080;
+            color: white;
+            width: 100%;
+        }
+
+        .btn-primary:hover { background: #5a7a6c; }
+
+        .btn-danger {
+            background: #ffebee;
+            color: #c62828;
+            padding: 8px 14px;
+            font-size: 0.8em;
+        }
+
+        .btn-danger:hover { background: #ffcdd2; }
+
+        .btn-sm {
+            background: #f0f0f0;
+            color: #555;
+            padding: 8px 12px;
+            font-size: 0.8em;
+        }
+
+        .btn-sm:hover { background: #e0e0e0; }
+
+        .btn-save {
+            background: #6b9080;
+            color: white;
+            padding: 8px 14px;
+            font-size: 0.8em;
+        }
+
+        .btn-save:hover { background: #5a7a6c; }
+
+        /* Professionals list */
+        #adminSection { display: none; }
+
+        .professionals-list { margin-bottom: 30px; }
+
+        .professional-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .professional-item:last-child { border-bottom: none; }
+
+        .professional-fields {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex-shrink: 0;
+            margin-right: 16px;
+        }
+
+        .field-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .field-label {
+            font-size: 0.65em;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #bbb;
+            width: 54px;
+            flex-shrink: 0;
+        }
+
+        .professional-fields input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            font-size: 0.95em;
+            outline: none;
+            background: #f8f8f8;
+        }
+
+        .professional-fields input.light-id-input {
+            max-width: 80px;
+        }
+
+        .toggle-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .toggle-label {
+            font-size: 0.6em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #bbb;
+        }
+
+        .toggle {
+            position: relative;
+            width: 42px;
+            height: 24px;
+        }
+
+        .toggle input { opacity: 0; width: 0; height: 0; }
+
+        .toggle-slider {
+            position: absolute;
+            inset: 0;
+            background: #ddd;
+            border-radius: 24px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            left: 3px;
+            top: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.2s;
+        }
+
+        .toggle input:checked + .toggle-slider { background: #6b9080; }
+        .toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
+
+        .professional-item.inactive { opacity: 0.45; }
+
+        .drag-handle {
+            cursor: grab;
+            color: #ccc;
+            font-size: 1.3em;
+            padding: 4px 8px;
+            user-select: none;
+            touch-action: none;
+        }
+
+        .drag-handle:active { cursor: grabbing; }
+
+        .sortable-ghost {
+            opacity: 0.4;
+            background: #f0f0f0;
+        }
+
+        /* Add form */
+        .add-form {
+            border-top: 2px solid #f0f0f0;
+            padding-top: 24px;
+        }
+
+        .add-form label {
+            display: block;
+            font-size: 0.7em;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #bbb;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .add-form input {
+            width: 100%;
+            padding: 14px 18px;
+            font-size: 1em;
+            border: 1px solid #e5e5e5;
+            border-radius: 12px;
+            background: #f8f8f8;
+            margin-bottom: 12px;
+            outline: none;
+        }
+
+        .message {
+            margin-top: 16px;
+            padding: 12px 18px;
+            border-radius: 10px;
+            font-size: 0.9em;
+            display: none;
+        }
+
+        .message.success { background: #e8f5e9; color: #2e7d32; border: 1px solid #c3e6cb; display: block; }
+        .message.error { background: #ffebee; color: #c62828; border: 1px solid #f5c6cb; display: block; }
+
+        .section-title {
+            font-size: 0.7em;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #bbb;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #aaa;
+            font-size: 0.85em;
+            text-decoration: none;
+        }
+
+        .back-link:hover { color: #6b9080; }
+
+        /* Gear button */
+        .gear-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #bbb;
+            padding: 2px 4px;
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+            transition: color 0.15s;
+        }
+
+        .gear-btn:hover { color: #6b9080; }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 500;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.open { display: flex; }
+
+        .modal-card {
+            background: white;
+            border-radius: 20px;
+            padding: 36px 32px;
+            width: 320px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+
+        .modal-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .modal-subtitle {
+            font-size: 0.8em;
+            color: #aaa;
+            margin-bottom: 24px;
+        }
+
+        .modal-field {
+            margin-bottom: 16px;
+        }
+
+        .modal-field label {
+            display: block;
+            font-size: 0.65em;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #bbb;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .modal-field input {
+            width: 100%;
+            padding: 10px 14px;
+            font-size: 0.95em;
+            border: 1px solid #e5e5e5;
+            border-radius: 10px;
+            background: #f8f8f8;
+            outline: none;
+        }
+
+        .modal-field input:focus {
+            border-color: #6b9080;
+            background: white;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #bbb;
+            font-size: 1.4em;
+            line-height: 1;
+            padding: 4px;
+        }
+
+        .modal-close:hover { color: #555; }
+
+        .modal-card { position: relative; }
+
+        .modal-actions {
+            margin-top: 24px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Hue Configuration Modal -->
+    <div class="modal-overlay" id="hueModal" onclick="handleModalOverlayClick(event)">
+        <div class="modal-card">
+            <button class="modal-close" onclick="closeHueModal()" title="Close">&times;</button>
+            <div class="modal-title" id="modalTitle">Configuration</div>
+            <div class="modal-subtitle">Devices assigned to this office</div>
+            <input type="hidden" id="modalIndex" value="" />
+            <div class="modal-field">
+                <label>Light</label>
+                <input type="hidden" id="modalLightId" value="" />
+                <div id="lightUnassigned" style="display:flex;gap:8px;align-items:center;">
+                    <button type="button" class="btn btn-sm" onclick="findLights()" id="findLightsBtn" style="flex:1">Find Lights</button>
+                </div>
+                <div id="lightAssigned" style="display:none;gap:8px;align-items:center;">
+                    <div style="flex:1;position:relative;">
+                        <input type="text" id="modalLightName" style="width:100%;padding-right:24px;box-sizing:border-box;" readonly />
+                        <span onclick="clearLight()" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);color:#c62828;font-size:1em;cursor:pointer;line-height:1;">×</span>
+                    </div>
+                    <button type="button" class="btn btn-sm" onclick="findLights()" style="white-space:nowrap;flex-shrink:0;width:100px">Find Lights</button>
+                </div>
+                <div id="lightResults" style="display:none;margin-top:10px;border:1px solid #e5e5e5;border-radius:10px;overflow:hidden;"></div>
+            </div>
+            <div class="modal-field">
+                <label>Button</label>
+                <input type="hidden" id="modalButtonId" value="" />
+                <div id="buttonUnassigned" style="display:flex;gap:8px;align-items:center;">
+                    <button type="button" class="btn btn-sm" onclick="findSensors()" id="findSensorsBtn" style="flex:1">Find Buttons</button>
+                </div>
+                <div id="buttonAssigned" style="display:none;gap:8px;align-items:center;">
+                    <div style="flex:1;position:relative;">
+                        <input type="text" id="modalButtonName" style="width:100%;padding-right:24px;box-sizing:border-box;" readonly />
+                        <span onclick="clearButton()" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);color:#c62828;font-size:1em;cursor:pointer;line-height:1;">×</span>
+                    </div>
+                    <button type="button" class="btn btn-sm" onclick="findSensors()" style="white-space:nowrap;flex-shrink:0;width:100px">Find Buttons</button>
+                </div>
+                <div id="sensorResults" style="display:none;margin-top:10px;border:1px solid #e5e5e5;border-radius:10px;overflow:hidden;"></div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-save" style="width:100%" onclick="saveHueConfig()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+    <div class="header">
+        <div class="header-title">CHECK-IN ADMINISTRATION</div>
+    </div>
+
+    <div class="card">
+        <!-- Login -->
+        <div id="loginSection">
+            <h2>Admin Login</h2>
+            <p class="subtitle">Enter your admin password to manage professionals.</p>
+            <div class="password-wrapper">
+                <input type="password" id="passwordInput" placeholder="Password" />
+                <button type="button" class="eye-btn" onclick="togglePassword()" id="eyeBtn">
+                    <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                </button>
+            </div>
+            <button class="btn btn-primary" onclick="login()">Sign In</button>
+            <div id="loginMessage" class="message"></div>
+        </div>
+
+        <!-- Admin panel -->
+        <div id="adminSection">
+            <h2>Manage Professionals</h2>
+            <p class="subtitle">Add, remove, or reorder the professionals shown on the check-in page.</p>
+
+            <div class="section-title">Current Professionals</div>
+            <div class="professionals-list" id="professionalsList"></div>
+
+            <div class="add-form">
+                <label>Add a Professional</label>
+                <input type="text" id="newName" placeholder="Name (e.g. Dr. Smith)" />
+                <input type="text" id="newOffice" placeholder="Office (e.g. 101)" />
+                <button class="btn btn-primary" onclick="addProfessional()">Add Professional</button>
+                <div id="adminMessage" class="message"></div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script>
+        let adminPassword = '';
+        let sortableInstance = null;
+        let officesData = {};
+
+        async function login() {
+            const input = document.getElementById('passwordInput').value;
+            if (!input) return;
+
+            // Verify password against a protected endpoint before proceeding
+            const verify = await fetch('/api/admin/professionals', {
+                headers: { 'x-admin-password': input }
+            });
+
+            if (!verify.ok) {
+                showMessage('loginMessage', 'Incorrect password.', 'error');
+                return;
+            }
+
+            adminPassword = input;
+            const [professionals, offices] = await Promise.all([
+                verify.json(),
+                fetch('/api/admin/offices', { headers: { 'x-admin-password': input } }).then(r => r.json())
+            ]);
+            officesData = offices;
+            renderList(professionals);
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('adminSection').style.display = 'block';
+        }
+
+        document.getElementById('passwordInput').addEventListener('keydown', e => {
+            if (e.key === 'Enter') login();
+        });
+
+        function togglePassword() {
+            const input = document.getElementById('passwordInput');
+            const icon = document.getElementById('eyeIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.innerHTML = `
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                    <line x1="1" y1="1" x2="23" y2="23"/>`;
+            } else {
+                input.type = 'password';
+                icon.innerHTML = `
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>`;
+            }
+        }
+
+        async function fetchProfessionals() {
+            const res = await fetch('/api/professionals');
+            const professionals = await res.json();
+            renderList(professionals);
+            return professionals;
+        }
+
+        function renderList(professionals) {
+            const list = document.getElementById('professionalsList');
+            if (professionals.length === 0) {
+                list.innerHTML = '<p style="color:#bbb;font-size:0.9em;padding:16px 0;">No professionals added yet.</p>';
+                return;
+            }
+            list.innerHTML = professionals.map((p, i) => `
+                <div class="professional-item ${p.active === false ? 'inactive' : ''}" data-index="${i}">
+                    <span class="drag-handle">☰</span>
+                    <div class="toggle-wrapper">
+                        <span class="toggle-label">Show</span>
+                        <label class="toggle">
+                            <input type="checkbox" id="active-${i}" ${p.active !== false ? 'checked' : ''} onchange="toggleActive(${i}, this.checked)" />
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="professional-fields">
+                        <div class="field-row">
+                            <span class="field-label">Name</span>
+                            <input type="text" id="name-${i}" value="${p.name}" />
+                        </div>
+                        <div class="field-row">
+                            <span class="field-label">Office</span>
+                            <input type="text" id="office-${i}" value="${p.office || ''}" placeholder="e.g. 101" />
+                            <button type="button" class="gear-btn" onclick="openHueModal(${i})" title="Hue Configuration">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="3"/>
+                                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-save" onclick="updateName(${i})">Save</button>
+                        <button class="btn btn-danger" onclick="deleteProfessional(${i})">Remove</button>
+                    </div>
+                </div>
+            `).join('');
+
+            initSortable();
+        }
+
+        async function toggleActive(index, active) {
+            const item = document.querySelector(`#professionalsList .professional-item[data-index="${index}"]`);
+            item.classList.toggle('inactive', !active);
+
+            await fetch(`/api/admin/professionals/${index}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+                body: JSON.stringify({ active })
+            });
+
+            showMessage('adminMessage', active ? 'Now visible on check-in page.' : 'Hidden from check-in page.', 'success');
+        }
+
+        function getCurrentProfessionals(excludeIndex = -1) {
+            const items = document.querySelectorAll('#professionalsList .professional-item');
+            return Array.from(items)
+                .map((item, i) => ({
+                    index: i,
+                    name: item.querySelector('input[id^="name-"]').value.trim().toLowerCase(),
+                    office: item.querySelector('input[id^="office-"]').value.trim()
+                }))
+                .filter((_, i) => i !== excludeIndex);
+        }
+
+        async function addProfessional() {
+            const name = document.getElementById('newName').value.trim();
+            const office = document.getElementById('newOffice').value.trim();
+            if (!name) return showMessage('adminMessage', 'Please enter a name.', 'error');
+
+            const existing = getCurrentProfessionals();
+            if (existing.some(p => p.name === name.toLowerCase())) {
+                return showMessage('adminMessage', `"${name}" already exists in the list.`, 'error');
+            }
+
+            const res = await fetch('/api/admin/professionals', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+                body: JSON.stringify({ name, office })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                renderList(data.professionals);
+                document.getElementById('newName').value = '';
+                document.getElementById('newOffice').value = '';
+                showMessage('adminMessage', `"${name}" added successfully.`, 'success');
+            } else {
+                showMessage('adminMessage', 'Failed to add professional.', 'error');
+            }
+        }
+
+        async function deleteProfessional(index) {
+            if (!confirm('Remove this professional from the list?')) return;
+
+            const res = await fetch(`/api/admin/professionals/${index}`, {
+                method: 'DELETE',
+                headers: { 'x-admin-password': adminPassword }
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                renderList(data.professionals);
+                showMessage('adminMessage', 'Professional removed.', 'success');
+            } else {
+                showMessage('adminMessage', 'Failed to remove professional.', 'error');
+            }
+        }
+
+        async function updateName(index) {
+            const newName = document.getElementById(`name-${index}`).value.trim();
+            const newOffice = document.getElementById(`office-${index}`).value.trim();
+            if (!newName) return showMessage('adminMessage', 'Name cannot be empty.', 'error');
+
+            const others = getCurrentProfessionals(index);
+            if (others.some(p => p.name === newName.toLowerCase())) {
+                return showMessage('adminMessage', `"${newName}" already exists in the list.`, 'error');
+            }
+
+            const res = await fetch(`/api/admin/professionals/${index}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+                body: JSON.stringify({ name: newName, office: newOffice })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                renderList(data.professionals);
+                showMessage('adminMessage', 'Saved.', 'success');
+            } else {
+                showMessage('adminMessage', 'Failed to save.', 'error');
+            }
+        }
+
+        function initSortable() {
+            if (sortableInstance) sortableInstance.destroy();
+            sortableInstance = Sortable.create(document.getElementById('professionalsList'), {
+                handle: '.drag-handle',
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                onEnd: async () => {
+                    // Read new order directly from DOM — SortableJS already moved the elements
+                    const items = document.querySelectorAll('#professionalsList .professional-item');
+                    const professionals = Array.from(items).map(item => ({
+                        name: item.querySelector('input[id^="name-"]').value,
+                        office: item.querySelector('input[id^="office-"]').value.trim(),
+                        active: item.querySelector('input[id^="active-"]').checked
+                    }));
+
+                    const reorderRes = await fetch('/api/admin/reorder', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+                        body: JSON.stringify({ professionals })
+                    });
+
+                    if (reorderRes.ok) {
+                        // Update indexes on existing DOM elements without re-rendering
+                        items.forEach((item, i) => {
+                            item.dataset.index = i;
+                            item.querySelector('input[id^="name-"]').id = `name-${i}`;
+                            item.querySelector('input[id^="office-"]').id = `office-${i}`;
+                            item.querySelector('input[id^="active-"]').id = `active-${i}`;
+                            item.querySelector('input[id^="active-"]').setAttribute('onchange', `toggleActive(${i}, this.checked)`);
+                            item.querySelector('.btn-save').setAttribute('onclick', `updateName(${i})`);
+                            item.querySelector('.btn-danger').setAttribute('onclick', `deleteProfessional(${i})`);
+                            item.querySelector('.gear-btn').setAttribute('onclick', `openHueModal(${i})`);
+                        });
+                        showMessage('adminMessage', 'Order saved.', 'success');
+                    } else {
+                        showMessage('adminMessage', 'Failed to save order.', 'error');
+                        fetchProfessionals();
+                    }
+                }
+            });
+        }
+
+        function openHueModal(index) {
+            const officeId = document.getElementById(`office-${index}`).value.trim();
+            if (!officeId) return showMessage('adminMessage', 'Set an office number first.', 'error');
+            const officeConfig = officesData[officeId] || {};
+            document.getElementById('modalTitle').textContent = `Office ${officeId} Configuration`;
+            document.getElementById('modalIndex').value = index;
+            document.getElementById('modalLightId').value = officeConfig.lightId || '';
+            if (officeConfig.lightId) {
+                document.getElementById('modalLightName').value = officeConfig.lightName || officeConfig.lightId;
+                document.getElementById('lightUnassigned').style.display = 'none';
+                document.getElementById('lightAssigned').style.display = 'flex';
+            } else {
+                document.getElementById('lightUnassigned').style.display = 'flex';
+                document.getElementById('lightAssigned').style.display = 'none';
+            }
+            document.getElementById('modalButtonId').value = officeConfig.buttonId || '';
+            if (officeConfig.buttonId) {
+                document.getElementById('modalButtonName').value = officeConfig.buttonName || officeConfig.buttonId;
+                document.getElementById('buttonUnassigned').style.display = 'none';
+                document.getElementById('buttonAssigned').style.display = 'flex';
+            } else {
+                document.getElementById('buttonUnassigned').style.display = 'flex';
+                document.getElementById('buttonAssigned').style.display = 'none';
+            }
+            document.getElementById('lightResults').style.display = 'none';
+            document.getElementById('lightResults').innerHTML = '';
+            document.getElementById('sensorResults').style.display = 'none';
+            document.getElementById('sensorResults').innerHTML = '';
+            document.getElementById('hueModal').classList.add('open');
+        }
+
+        function closeHueModal() {
+            document.getElementById('hueModal').classList.remove('open');
+        }
+
+        function handleModalOverlayClick(e) {
+            if (e.target === document.getElementById('hueModal')) closeHueModal();
+        }
+
+        async function saveHueConfig() {
+            const index = parseInt(document.getElementById('modalIndex').value);
+            const officeId = document.getElementById(`office-${index}`).value.trim();
+            const lightId = document.getElementById('modalLightId').value.trim();
+            const lightName = document.getElementById('modalLightName').value.trim();
+            const buttonId = document.getElementById('modalButtonId').value.trim();
+            const buttonName = document.getElementById('modalButtonName').value.trim();
+
+            if (!officeId) {
+                return showMessage('adminMessage', 'Set an office number first.', 'error');
+            }
+
+            // Uniqueness validation — check other offices (not the one being edited)
+            const otherOffices = Object.entries(officesData).filter(([id]) => id !== officeId);
+            if (lightId) {
+                const conflict = otherOffices.find(([, o]) => o.lightId && o.lightId === lightId);
+                if (conflict) return showMessage('adminMessage', `Light "${lightId}" is already assigned to office ${conflict[0]}.`, 'error');
+            }
+            if (buttonId) {
+                const conflict = otherOffices.find(([, o]) => o.buttonId && o.buttonId === buttonId);
+                if (conflict) return showMessage('adminMessage', `Button "${buttonId}" is already assigned to office ${conflict[0]}.`, 'error');
+            }
+
+            const res = await fetch(`/api/admin/offices/${officeId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+                body: JSON.stringify({ lightId, lightName, buttonId, buttonName })
+            });
+
+            if (res.ok) {
+                officesData[officeId] = { lightId, lightName, buttonId, buttonName };
+                closeHueModal();
+                showMessage('adminMessage', 'Hue configuration saved.', 'success');
+            } else {
+                showMessage('adminMessage', 'Failed to save Hue configuration.', 'error');
+            }
+        }
+
+        async function findLights() {
+            const btn = document.getElementById('findLightsBtn');
+            const results = document.getElementById('lightResults');
+            btn.disabled = true;
+            btn.textContent = 'Scanning…';
+            results.style.display = 'none';
+
+            try {
+                const res = await fetch('/api/lights');
+                if (!res.ok) throw new Error('Bridge unavailable');
+                const lights = await res.json();
+                const currentOfficeId = document.getElementById(`office-${document.getElementById('modalIndex').value}`).value.trim();
+                const usedLightIds = new Set(Object.entries(officesData).filter(([id]) => id !== currentOfficeId).map(([, o]) => o.lightId).filter(Boolean));
+                const entries = Object.entries(lights).filter(([id]) => !usedLightIds.has(id)).sort(([, a], [, b]) => a.name.localeCompare(b.name));
+
+                if (entries.length === 0) {
+                    results.innerHTML = '<div style="padding:12px 14px;font-size:0.85em;color:#aaa;">No available lights found.</div>';
+                } else {
+                    results.innerHTML = entries.map(([id, l], idx) => `
+                        <div onclick="selectLight('${id}', '${l.name.replace(/'/g, "\\'")}')" style="padding:11px 14px;font-size:0.85em;cursor:pointer;${idx < entries.length - 1 ? 'border-bottom:1px solid #f0f0f0;' : ''}display:flex;justify-content:space-between;align-items:center;">
+                            <span style="color:#1a1a1a;">${l.name}</span>
+                        </div>
+                    `).join('');
+                }
+                results.style.display = 'block';
+            } catch (e) {
+                results.innerHTML = '<div style="padding:12px 14px;font-size:0.85em;color:#c62828;">Could not reach Hue Bridge. Make sure the bridge is connected and demo mode is off.</div>';
+                results.style.display = 'block';
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Find Lights';
+        }
+
+        function selectLight(id, name) {
+            document.getElementById('modalLightId').value = id;
+            document.getElementById('modalLightName').value = name;
+            document.getElementById('lightUnassigned').style.display = 'none';
+            document.getElementById('lightAssigned').style.display = 'flex';
+            document.getElementById('lightResults').style.display = 'none';
+        }
+
+        function clearLight() {
+            document.getElementById('modalLightId').value = '';
+            document.getElementById('modalLightName').value = '';
+            document.getElementById('lightAssigned').style.display = 'none';
+            document.getElementById('lightUnassigned').style.display = 'flex';
+            document.getElementById('lightResults').style.display = 'none';
+            document.getElementById('lightResults').innerHTML = '';
+        }
+
+        async function findSensors() {
+            const btn = document.getElementById('findSensorsBtn');
+            const results = document.getElementById('sensorResults');
+            btn.disabled = true;
+            btn.textContent = 'Scanning…';
+            results.style.display = 'none';
+
+            try {
+                const res = await fetch('/api/sensors');
+                if (!res.ok) throw new Error('Bridge unavailable');
+                const sensors = await res.json();
+                const currentOfficeId = document.getElementById(`office-${document.getElementById('modalIndex').value}`).value.trim();
+                const usedButtonIds = new Set(Object.entries(officesData).filter(([id]) => id !== currentOfficeId).map(([, o]) => o.buttonId).filter(Boolean));
+                const entries = Object.entries(sensors).filter(([id]) => !usedButtonIds.has(id)).sort(([, a], [, b]) => a.name.localeCompare(b.name));
+
+                if (entries.length === 0) {
+                    results.innerHTML = '<div style="padding:12px 14px;font-size:0.85em;color:#aaa;">No available buttons found.</div>';
+                } else {
+                    results.innerHTML = entries.map(([id, s], idx) => `
+                        <div onclick="selectSensor('${id}', '${s.name.replace(/'/g, "\\'")}')" style="padding:11px 14px;font-size:0.85em;cursor:pointer;${idx < entries.length - 1 ? 'border-bottom:1px solid #f0f0f0;' : ''}display:flex;justify-content:space-between;align-items:center;">
+                            <span style="color:#1a1a1a;">${s.name}</span>
+                        </div>
+                    `).join('');
+                }
+                results.style.display = 'block';
+            } catch (e) {
+                results.innerHTML = '<div style="padding:12px 14px;font-size:0.85em;color:#c62828;">Could not reach Hue Bridge. Make sure the bridge is connected and demo mode is off.</div>';
+                results.style.display = 'block';
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Find Buttons';
+        }
+
+        function selectSensor(id, name) {
+            document.getElementById('modalButtonId').value = id;
+            document.getElementById('modalButtonName').value = name;
+            document.getElementById('buttonUnassigned').style.display = 'none';
+            document.getElementById('buttonAssigned').style.display = 'flex';
+            document.getElementById('sensorResults').style.display = 'none';
+        }
+
+        function clearButton() {
+            document.getElementById('modalButtonId').value = '';
+            document.getElementById('modalButtonName').value = '';
+            document.getElementById('buttonAssigned').style.display = 'none';
+            document.getElementById('buttonUnassigned').style.display = 'flex';
+            document.getElementById('sensorResults').style.display = 'none';
+            document.getElementById('sensorResults').innerHTML = '';
+        }
+
+        function showMessage(id, text, type) {
+            const toast = document.getElementById('toast');
+            toast.textContent = text;
+            toast.className = `toast ${type} show`;
+            setTimeout(() => { toast.className = `toast ${type}`; }, 3000);
+        }
+    </script>
+</body>
+</html>
