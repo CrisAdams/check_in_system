@@ -1,4 +1,4 @@
-# RVA Counseling Check-In System - Project Status
+# Check-In System - Project Status
 
 **Last Updated:** March 9, 2026
 **Status:** Development Complete - Ready for Deployment
@@ -134,7 +134,7 @@ Patient → iPad Browser → Node.js Server → Hue Bridge → Smart Bulb
 
 ### Code Files
 ```
-rva_counseling/
+check_in_system/
 ├── server.js                    # Node.js backend server with Hue integration
 ├── package.json                 # Dependencies and npm scripts
 ├── config.json                  # Active configuration (demo mode currently)
@@ -447,7 +447,7 @@ All tested functionality works as expected in demo mode.
 
 ### Start Server
 ```bash
-cd /Users/cristeenadams/code/highburyholdings/rva_counseling
+cd /Users/cristeenadams/code/highburyholdings/check_in_system
 npm start
 ```
 
@@ -501,14 +501,14 @@ curl -X POST http://[bridge-ip]/api -d '{"devicetype":"checkin-system"}'
 
 ### What to Backup
 1. **config.json** - Contains all your settings
-2. **Entire rva_counseling folder** - All code
+2. **Entire check_in_system folder** - All code
 3. **Hue Bridge username** - Write it down
 4. **Network information** - IP addresses, WiFi credentials
 
 ### Recovery Process (if GMKtec fails)
 1. Get replacement computer
 2. Install Node.js
-3. Copy backed-up `rva_counseling` folder
+3. Copy backed-up `check_in_system` folder
 4. Follow Phase 1 setup again
 5. Should be running in ~1 hour
 
@@ -557,7 +557,7 @@ curl -X POST http://[bridge-ip]/api -d '{"devicetype":"checkin-system"}'
 - Equipment needs to be ordered (allow 1-2 weeks shipping)
 - Server is currently running in background (can stop with Ctrl+C)
 - Demo mode works perfectly for showing stakeholders
-- All code is in: `/Users/cristeenadams/code/highburyholdings/rva_counseling`
+- All code is in: `/Users/cristeenadams/code/highburyholdings/check_in_system`
 
 ### Tips
 - Read SETUP_GUIDE.md before starting Phase 1

@@ -198,14 +198,14 @@ Setting up the GMKtec with all software so it's 95% ready before moving to busin
 **3.1 Copy the project folder**
 
 **Option A: USB Drive**
-- Copy `rva_counseling` folder from your Mac to USB drive
+- Copy `check_in_system` folder from your Mac to USB drive
 - Plug USB into GMKtec
 - Copy folder to `C:\Users\[YourName]\`
 
 **Option B: Network Share**
 - Enable file sharing on your Mac
 - Access Mac from GMKtec via network
-- Copy `rva_counseling` folder
+- Copy `check_in_system` folder
 
 **Option C: Cloud (Dropbox/Google Drive)**
 - Upload folder from Mac
@@ -216,7 +216,7 @@ Setting up the GMKtec with all software so it's 95% ready before moving to busin
 - Navigate to where you copied the folder
 - Should see:
   ```
-  rva_counseling/
+  check_in_system/
   ├── server.js
   ├── package.json
   ├── config.json
@@ -303,14 +303,14 @@ This lets you access GMKtec from your Mac later without needing a monitor.
 This makes the server start automatically when GMKtec boots up.
 
 **6.1 Create startup batch file**
-- Right-click in the `rva_counseling` folder
+- Right-click in the `check_in_system` folder
 - New → Text Document
 - Name it: `start-server.bat`
 - Right-click → Edit
 - Paste this:
   ```batch
   @echo off
-  cd /d C:\Users\[YourName]\rva_counseling
+  cd /d C:\Users\[YourName]\check_in_system
   npm start
   ```
 - Replace `[YourName]` with your actual username
@@ -552,7 +552,7 @@ Make a table like this:
 ### Step 6: Update config.json (10 minutes)
 
 **6.1 Open config.json**
-- On GMKtec, navigate to `rva_counseling` folder
+- On GMKtec, navigate to `check_in_system` folder
 - Right-click `config.json` → Edit with Notepad
 
 **6.2 Update with your settings**
@@ -849,7 +849,7 @@ Common Issues:
   □ Power cycle GMKtec if needed
 
 Support:
-  Config file: C:\Users\[Name]\rva_counseling\config.json
+  Config file: C:\Users\[Name]\check_in_system\config.json
   Server logs: Check Command Prompt window
 
 ═══════════════════════════════════════════════════
@@ -881,7 +881,7 @@ Support:
 **Save these files somewhere safe:**
 
 1. **config.json** - all your settings
-2. **entire rva_counseling folder** - backup to USB/cloud
+2. **entire check_in_system folder** - backup to USB/cloud
 3. **This guide** - keep PDF copy
 4. **Network info** - WiFi passwords, IP addresses
 

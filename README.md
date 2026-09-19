@@ -149,7 +149,7 @@ You should see:
 
 ### Option 1: Manual Start (Recommended for Testing)
 ```bash
-cd /Users/cristeenadams/code/highburyholdings/rva_counseling
+cd /Users/cristeenadams/code/highburyholdings/check_in_system
 npm start
 ```
 Keep this Terminal window open while the system is in use.
@@ -307,7 +307,7 @@ Response: { "status": "ok", "message": "Server is running" }
 ## File Structure
 
 ```
-rva_counseling/
+check_in_system/
 ├── server.js              # Backend Node.js server
 ├── package.json           # Dependencies
 ├── config.json            # Your Hue Bridge settings (you create this)
